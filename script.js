@@ -226,6 +226,12 @@
         geo.dx = (cr.left + cr.width / 2) - (sr.left + sr.width / 2);
         geo.dy = (cr.top + cr.height / 2) - (sr.top + sr.height / 2);
         geo.sx = cr.width / bw; geo.sy = cr.height / bh;
+        /* на телефоне текст героя стоит под сценой: книга проходит за текстовым блоком, а не поверх строк */
+        var layer = fly.parentNode, txt = hero.querySelector(".hero-txt");
+        if (layer && txt && W.innerWidth <= 900) {
+          var tr = txt.getBoundingClientRect(), t = tr.top - hr.top - 80, b = tr.bottom - hr.top + 16;
+          layer.style.clipPath = 'path(evenodd, "M-3000 -3000 H6000 V9000 H-3000 Z M-3000 ' + t + ' H6000 V' + b + ' H-3000 Z")';
+        } else if (layer) layer.style.clipPath = "";
       };
       var flightTl = null;
       var build = function () {
@@ -287,7 +293,7 @@
     gsap.utils.toArray(".vitr").forEach(function (sh) {
       var books = sh.querySelectorAll(".b3-show");
       gsap.from(books, { "--ry": "90deg", y: -40, opacity: 0, duration: 1.6, ease: "power3.inOut", stagger: 0.2, delay: 0.25 });
-      gsap.to(sh, { rotateY: 16, y: 50, ease: "none", scrollTrigger: { trigger: sh, start: "top 30%", end: "bottom top", scrub: true } });
+      gsap.to(sh, { rotateY: 6, y: 40, transformOrigin: "50% 100%", ease: "none", scrollTrigger: { trigger: sh, start: "top 30%", end: "bottom top", scrub: true } });
     });
     gsap.utils.toArray(".pm-niche .niche").forEach(function (n) {
       gsap.from(n.querySelector(".niche-in"), { clipPath: "inset(100% 0% 0% 0%)", duration: 1.4, ease: "power3.inOut", delay: 0.2 });
