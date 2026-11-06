@@ -230,15 +230,18 @@
         var layer = fly.parentNode, txt = hero.querySelector(".hero-txt");
         if (layer && txt && W.innerWidth <= 900) {
           var tr = txt.getBoundingClientRect(), t = tr.top - hr.top - 80, b = tr.bottom - hr.top + 16;
-          layer.style.clipPath = 'path(evenodd, "M-3000 -3000 H6000 V9000 H-3000 Z M-3000 ' + t + ' H6000 V' + b + ' H-3000 Z")';
-        } else if (layer) layer.style.clipPath = "";
+          var m = "linear-gradient(to bottom,#000 " + (t - 70) + "px,transparent " + t + "px,transparent " + b + "px,#000 " + (b + 70) + "px)";
+          /* маска действует только в границах слоя: слой тянем вниз, центр перспективы держим прежним */
+          layer.style.bottom = "-2400px"; layer.style.perspectiveOrigin = "50% " + Math.round(hr.height * 0.3) + "px";
+          layer.style.webkitMaskImage = m; layer.style.maskImage = m;
+        } else if (layer) { layer.style.webkitMaskImage = ""; layer.style.maskImage = ""; layer.style.bottom = ""; layer.style.perspectiveOrigin = ""; }
       };
       var flightTl = null;
       var build = function () {
         measure();
         hero.classList.add("fly-on");
         flightTl = gsap.timeline({
-          scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 0.6, invalidateOnRefresh: true, onRefreshInit: measure }
+          scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 1.2, invalidateOnRefresh: true, onRefreshInit: measure }
         });
         flightTl
           .to(fly, { x: function () { return Math.min(26, geo.dx * 0.05); }, y: -14, scale: 1.08, duration: 0.12, ease: "power2.out" }, 0)

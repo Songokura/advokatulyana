@@ -210,7 +210,9 @@ ul,ol{margin:0;padding:0;list-style:none}
 .t-ivory{background:var(--ivory)}
 .t-sage{background:linear-gradient(180deg,var(--sage2),#DDE6E1)}
 .t-green{background:var(--noise),radial-gradient(90% 120% at 50% 0,#17473A,var(--ink) 60%,var(--ink2));color:var(--ivory)}
-.sec-dirs .head{position:relative;z-index:5;background:var(--ivory);box-shadow:0 0 0 100vmax var(--ivory);clip-path:inset(0 -100vmax);padding-bottom:8px}
+.sec-dirs .head{position:relative;z-index:5;padding-bottom:8px}
+/* книга мягко растворяется за головой секции и проявляется под ней */
+.sec-dirs .head::before{content:"";position:absolute;z-index:-1;left:-100vmax;right:-100vmax;top:-90px;bottom:-36px;pointer-events:none;background:linear-gradient(to bottom,rgba(242,244,241,0) 0,var(--ivory) 90px,var(--ivory) calc(100% - 36px),rgba(242,244,241,0) 100%)}
 .sec-dirs{overflow-x:clip;padding-top:clamp(96px,11vw,170px)}
 
 /* направления: обложки кодексов */
