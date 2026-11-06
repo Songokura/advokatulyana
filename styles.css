@@ -201,7 +201,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .hero.off .glint,.hero.off .dust i,.hero.off .ly-glow span{animation-play-state:paused}
 
 /* летящая книга */
-.fly-layer{position:absolute;inset:0;pointer-events:none;z-index:1;perspective:1700px;perspective-origin:50% 30%}
+.fly-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
 .b3-fly{position:absolute;left:0;top:0;visibility:hidden;--ry:90deg}
 .fly-on .b3-fly{visibility:visible}
 .fly-on .fly-slot{visibility:hidden}

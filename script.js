@@ -222,7 +222,7 @@
         /* книга рисуется сразу в размер карточки и на старте уменьшена до корешка: текст обложки остаётся чётким */
         var bw = Math.round(cr.width), bh = Math.round(cr.height);
         geo.s0x = (sr.height * 0.75) / bw; geo.s0y = sr.height / bh;
-        var bt = Math.round(sr.width / geo.s0x);
+        var bt = Math.round(sr.width / geo.s0x); geo.bt = bt;
         fly.style.setProperty("--bt", bt + "px"); fly.style.setProperty("--bh", bh + "px"); fly.style.setProperty("--bw", bw + "px");
         fly.style.left = (sr.left - hr.left + sr.width / 2 - bw / 2) + "px";
         fly.style.top = (sr.top - hr.top + sr.height / 2 - bh / 2) + "px";
@@ -234,24 +234,28 @@
           var tr = txt.getBoundingClientRect(), t = tr.top - hr.top - 80, b = tr.bottom - hr.top + 16;
           var m = "linear-gradient(to bottom,#000 " + (t - 70) + "px,transparent " + t + "px,transparent " + b + "px,#000 " + (b + 70) + "px)";
           /* маска действует только в границах слоя: слой тянем вниз, центр перспективы держим прежним */
-          layer.style.bottom = "-2400px"; layer.style.perspectiveOrigin = "50% " + Math.round(hr.height * 0.3) + "px";
+          layer.style.bottom = "-2400px";
           layer.style.webkitMaskImage = m; layer.style.maskImage = m;
-        } else if (layer) { layer.style.webkitMaskImage = ""; layer.style.maskImage = ""; layer.style.bottom = ""; layer.style.perspectiveOrigin = ""; }
+        } else if (layer) { layer.style.webkitMaskImage = ""; layer.style.maskImage = ""; layer.style.bottom = ""; }
       };
       var flightTl = null;
       var build = function () {
         measure();
-        hero.classList.add("fly-on");
         var cover = fly.querySelector(".f-cv"), body = fly.querySelectorAll(".f-bk, .f-sp, .f-pg, .f-tp"), shade = fly.querySelector(".cv-shade");
         gsap.set(cover, { transformOrigin: "0% 50%" });
+        /* перспектива своя у книги: точка обзора всегда напротив неё, книга не косится ни на полке, ни при посадке */
+        gsap.set(fly, { transformPerspective: 2400, transformOrigin: "50% 50%" });
         flightTl = gsap.timeline({
-          scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 0.25, invalidateOnRefresh: true, onRefreshInit: measure }
+          scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 0.25, invalidateOnRefresh: true, onRefreshInit: measure,
+            onUpdate: function (st) { hero.classList.toggle("fly-on", st.progress > 0.003); } }
         });
         flightTl
           .fromTo(fly, { x: 0, y: 0, scaleX: function () { return geo.s0x; }, scaleY: function () { return geo.s0y; }, scaleZ: function () { return geo.s0x; } },
-            { x: function () { return Math.min(26, geo.dx * 0.05); }, y: -14, scaleX: function () { return geo.s0x * 1.08; }, scaleY: function () { return geo.s0y * 1.08; }, scaleZ: function () { return geo.s0x * 1.08; }, duration: 0.12, ease: "power2.out", immediateRender: true }, 0)
-          .to(fly, { "--ry": "0deg", duration: 0.42, ease: "power1.inOut" }, 0.1)
-          .to(fly, { x: function () { return geo.dx; }, y: function () { return geo.dy; }, scaleX: 1, scaleY: 1, scaleZ: 1, duration: 0.8, ease: "power2.inOut" }, 0.12)
+            { x: function () { return Math.min(26, geo.dx * 0.05); }, y: -14, scaleX: function () { return geo.s0x * 1.08; }, scaleY: function () { return geo.s0y * 1.08; }, scaleZ: function () { return geo.s0x * 1.08; }, duration: 0.08, ease: "power2.out", immediateRender: true }, 0)
+          .to(fly, { "--ry": "0deg", duration: 0.36, ease: "power1.inOut" }, 0.03)
+          .to(fly, { x: function () { return geo.dx; }, y: function () { return geo.dy; }, scaleX: 1, scaleY: 1, scaleZ: 1, duration: 0.84, ease: "power1.inOut" }, 0.06)
+          /* к посадке книга становится тонкой, как карточка: задняя обложка не выглядывает из-за передней */
+          .fromTo(fly, { "--bt": function () { return geo.bt + "px"; } }, { "--bt": "6px", duration: 0.42, ease: "power1.in", immediateRender: false }, 0.46)
           /* посадка: книга легла на место карточки и раскрывается - обложка уходит на корешок, под ней страница направления */
           .fromTo(card, { opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none", immediateRender: true }, 0.91)
           .to(body, { opacity: 0, duration: 0.01, ease: "none" }, 0.91)
@@ -260,7 +264,20 @@
           .to(cover, { opacity: 0, duration: 0.06, ease: "none" }, 1.03);
         ST.refresh();
       };
-      if (hero.classList.contains("done")) build(); else W.addEventListener("hero:done", build, { once: true });
+      /* полёт готов с первой прокрутки, не дожидаясь конца интро героя */
+      var built = false;
+      var go = function () {
+        if (built) return; built = true;
+        W.removeEventListener("wheel", go); W.removeEventListener("touchstart", go); W.removeEventListener("keydown", go); W.removeEventListener("scroll", go);
+        if (!hero.classList.contains("done")) { hero.classList.add("done"); }
+        requestAnimationFrame(build);
+      };
+      if (hero.classList.contains("done") || W.pageYOffset > 0) go();
+      else {
+        W.addEventListener("hero:done", go, { once: true });
+        W.addEventListener("wheel", go, { passive: true }); W.addEventListener("touchstart", go, { passive: true });
+        W.addEventListener("keydown", go); W.addEventListener("scroll", go, { passive: true });
+      }
     }
 
     /* остальные обложки поднимаются на полку */
