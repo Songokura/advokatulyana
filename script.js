@@ -219,13 +219,15 @@
       var geo = {};
       var measure = function () {
         var hr = hero.getBoundingClientRect(), sr = slot.getBoundingClientRect(), cr = card.getBoundingClientRect();
-        var bt = sr.width, bh = sr.height, bw = Math.round(bh * 0.75);
+        /* книга рисуется сразу в размер карточки и на старте уменьшена до корешка: текст обложки остаётся чётким */
+        var bw = Math.round(cr.width), bh = Math.round(cr.height);
+        geo.s0x = (sr.height * 0.75) / bw; geo.s0y = sr.height / bh;
+        var bt = Math.round(sr.width / geo.s0x);
         fly.style.setProperty("--bt", bt + "px"); fly.style.setProperty("--bh", bh + "px"); fly.style.setProperty("--bw", bw + "px");
-        fly.style.left = (sr.left - hr.left + bt / 2 - bw / 2) + "px";
-        fly.style.top = (sr.top - hr.top) + "px";
+        fly.style.left = (sr.left - hr.left + sr.width / 2 - bw / 2) + "px";
+        fly.style.top = (sr.top - hr.top + sr.height / 2 - bh / 2) + "px";
         geo.dx = (cr.left + cr.width / 2) - (sr.left + sr.width / 2);
         geo.dy = (cr.top + cr.height / 2) - (sr.top + sr.height / 2);
-        geo.sx = cr.width / bw; geo.sy = cr.height / bh;
         /* на телефоне текст героя стоит под сценой: книга проходит за текстовым блоком, а не поверх строк */
         var layer = fly.parentNode, txt = hero.querySelector(".hero-txt");
         if (layer && txt && W.innerWidth <= 900) {
@@ -240,15 +242,22 @@
       var build = function () {
         measure();
         hero.classList.add("fly-on");
+        var cover = fly.querySelector(".f-cv"), body = fly.querySelectorAll(".f-bk, .f-sp, .f-pg, .f-tp"), shade = fly.querySelector(".cv-shade");
+        gsap.set(cover, { transformOrigin: "0% 50%" });
         flightTl = gsap.timeline({
-          scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 1.2, invalidateOnRefresh: true, onRefreshInit: measure }
+          scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 0.25, invalidateOnRefresh: true, onRefreshInit: measure }
         });
         flightTl
-          .to(fly, { x: function () { return Math.min(26, geo.dx * 0.05); }, y: -14, scale: 1.08, duration: 0.12, ease: "power2.out" }, 0)
+          .fromTo(fly, { x: 0, y: 0, scaleX: function () { return geo.s0x; }, scaleY: function () { return geo.s0y; }, scaleZ: function () { return geo.s0x; } },
+            { x: function () { return Math.min(26, geo.dx * 0.05); }, y: -14, scaleX: function () { return geo.s0x * 1.08; }, scaleY: function () { return geo.s0y * 1.08; }, scaleZ: function () { return geo.s0x * 1.08; }, duration: 0.12, ease: "power2.out", immediateRender: true }, 0)
           .to(fly, { "--ry": "0deg", duration: 0.42, ease: "power1.inOut" }, 0.1)
-          .to(fly, { x: function () { return geo.dx; }, y: function () { return geo.dy; }, scaleX: function () { return geo.sx; }, scaleY: function () { return geo.sy; }, duration: 0.8, ease: "power2.inOut" }, 0.12)
-          .fromTo(card, { opacity: 0 }, { opacity: 1, duration: 0.07, ease: "none", immediateRender: true }, 0.9)
-          .to(fly, { opacity: 0, duration: 0.06, ease: "none" }, 0.93);
+          .to(fly, { x: function () { return geo.dx; }, y: function () { return geo.dy; }, scaleX: 1, scaleY: 1, scaleZ: 1, duration: 0.8, ease: "power2.inOut" }, 0.12)
+          /* посадка: книга легла на место карточки и раскрывается - обложка уходит на корешок, под ней страница направления */
+          .fromTo(card, { opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none", immediateRender: true }, 0.91)
+          .to(body, { opacity: 0, duration: 0.01, ease: "none" }, 0.91)
+          .fromTo(cover, { rotationY: 0 }, { rotationY: -86, duration: 0.17, ease: "power2.inOut", immediateRender: false }, 0.91)
+          .fromTo(shade, { opacity: 0 }, { opacity: 0.6, duration: 0.17, ease: "power1.in", immediateRender: false }, 0.91)
+          .to(cover, { opacity: 0, duration: 0.06, ease: "none" }, 1.03);
         ST.refresh();
       };
       if (hero.classList.contains("done")) build(); else W.addEventListener("hero:done", build, { once: true });

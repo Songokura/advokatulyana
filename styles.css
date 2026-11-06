@@ -99,6 +99,7 @@ ul,ol{margin:0;padding:0;list-style:none}
 .b3-in{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateY(var(--ry)) rotateX(var(--rx))}
 .b3 .f{position:absolute;backface-visibility:hidden}
 .f-cv{inset:0;transform:translateZ(calc(var(--bt) / 2));background:var(--leather),linear-gradient(90deg,rgba(0,0,0,.38) 0,rgba(255,255,255,.08) 5%,rgba(0,0,0,.12) 9%,transparent 14%),var(--c);border-radius:1px 4px 4px 1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);overflow:hidden;container-type:inline-size}
+.cv-shade{position:absolute;inset:0;background:#06140F;opacity:0;pointer-events:none;border-radius:inherit}
 .f-bk{inset:0;transform:rotateY(180deg) translateZ(calc(var(--bt) / 2));background:var(--noise),var(--c);filter:brightness(.7)}
 .f-sp{top:0;height:100%;width:var(--bt);left:calc(50% - var(--bt) / 2);transform:rotateY(-90deg) translateZ(calc(var(--bw) / 2));display:grid;place-items:center;
   background:linear-gradient(90deg,rgba(0,0,0,.42),rgba(255,255,255,.14) 38%,rgba(255,255,255,.04) 55%,rgba(0,0,0,.4)),
