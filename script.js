@@ -221,8 +221,10 @@
         var hr = hero.getBoundingClientRect(), sr = slot.getBoundingClientRect(), cr = card.getBoundingClientRect();
         /* книга рисуется сразу в размер карточки и на старте уменьшена до корешка: текст обложки остаётся чётким */
         var bw = Math.round(cr.width), bh = Math.round(cr.height);
-        geo.s0x = (sr.height * 0.75) / bw; geo.s0y = sr.height / bh;
-        var bt = Math.round(sr.width / geo.s0x); geo.bt = bt;
+        /* корешок в 3D стоит ближе к зрителю на половину ширины книги: перспектива (3000px) его увеличивает - компенсируем */
+        var k = 3000 / (3000 - bw / 2);
+        geo.s0y = sr.height / bh / k; geo.s0x = geo.s0y;
+        var bt = Math.round(sr.width / (geo.s0x * k)); geo.bt = bt;
         fly.style.setProperty("--bt", bt + "px"); fly.style.setProperty("--bh", bh + "px"); fly.style.setProperty("--bw", bw + "px");
         fly.style.left = (sr.left - hr.left + sr.width / 2 - bw / 2) + "px";
         fly.style.top = (sr.top - hr.top + sr.height / 2 - bh / 2) + "px";
@@ -244,7 +246,7 @@
         var cover = fly.querySelector(".f-cv"), body = fly.querySelectorAll(".f-bk, .f-sp, .f-pg, .f-tp"), shade = fly.querySelector(".cv-shade");
         gsap.set(cover, { transformOrigin: "0% 50%" });
         /* перспектива своя у книги: точка обзора всегда напротив неё, книга не косится ни на полке, ни при посадке */
-        gsap.set(fly, { transformPerspective: 2400, transformOrigin: "50% 50%" });
+        gsap.set(fly, { transformOrigin: "50% 50%" });
         flightTl = gsap.timeline({
           scrollTrigger: { trigger: hero, start: "top top", endTrigger: card, end: "center 60%", scrub: 0.25, invalidateOnRefresh: true, onRefreshInit: measure,
             onUpdate: function (st) { hero.classList.toggle("fly-on", st.progress > 0.003); } }
@@ -255,7 +257,7 @@
           .to(fly, { "--ry": "0deg", duration: 0.36, ease: "power1.inOut" }, 0.03)
           .to(fly, { x: function () { return geo.dx; }, y: function () { return geo.dy; }, scaleX: 1, scaleY: 1, scaleZ: 1, duration: 0.84, ease: "power1.inOut" }, 0.06)
           /* к посадке книга становится тонкой, как карточка: задняя обложка не выглядывает из-за передней */
-          .fromTo(fly, { "--bt": function () { return geo.bt + "px"; } }, { "--bt": "6px", duration: 0.42, ease: "power1.in", immediateRender: false }, 0.46)
+          .fromTo(fly, { "--bt": function () { return geo.bt + "px"; } }, { "--bt": "6px", duration: 0.42, ease: "power1.in", immediateRender: true }, 0.46)
           /* посадка: книга легла на место карточки и раскрывается - обложка уходит на корешок, под ней страница направления */
           .fromTo(card, { opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none", immediateRender: true }, 0.91)
           .to(body, { opacity: 0, duration: 0.01, ease: "none" }, 0.91)

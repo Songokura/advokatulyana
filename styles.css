@@ -203,6 +203,8 @@ ul,ol{margin:0;padding:0;list-style:none}
 /* летящая книга */
 .fly-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
 .b3-fly{position:absolute;left:0;top:0;visibility:hidden;--ry:90deg}
+/* перспектива внутри книги: точка обзора летит вместе с ней, книга видна прямо на всём пути */
+.b3-fly .b3-in{transform:perspective(3000px) rotateY(var(--ry)) rotateX(var(--rx))}
 .fly-on .b3-fly{visibility:visible}
 .fly-on .fly-slot{visibility:hidden}
 
